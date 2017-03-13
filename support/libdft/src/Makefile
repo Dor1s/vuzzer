@@ -15,10 +15,14 @@ CXXFLAGS	+= -Wall -Wno-unknown-pragmas -c		\
 		   -DTARGET_IA32 -DHOST_IA32 -DTARGET_LINUX	\
 		   # -DHUGE_TLB -mtune=core2
 ARFLAGS		= rcsv
-H_INCLUDE	+= -I. -I$(PIN_INCLUDE)				\
+H_INCLUDE	+= -include /usr/include/features.h \
+			 -I. -I$(PIN_INCLUDE)				\
 		   -I$(PIN_INCLUDE)/gen				\
 		   -I$(PIN_XED_INCLUDE)				\
-		   -I$(PIN_ROOT)/extras/components/include
+		   -I$(PIN_ROOT)/extras/components/include \
+		   -I$(PIN_ROOT)/extras/crt/include \
+		   -I$(PIN_ROOT)/extras/crt/include/kernel/uapi/ \
+		   -I$(EWAH_ROOT)/headers/
 OBJS		= libdft_api.o libdft_core.o syscall_desc.o tagmap.o tag_traits.o
 LIB		= libdft.a
 
@@ -42,6 +46,9 @@ sanity:
 ifndef PIN_ROOT
 	$(error "PIN_ROOT environment variable is not set")
 endif
+ifndef PIN_ROOT
+	$(error "EWAH_ROOT environment variable is not set")
+endif
 # check the OS (must be Linux)
 ifeq ($(strip $(OS)),)
 	$(error "This version of libdft is for Linux only")
@@ -58,9 +65,9 @@ else
 PIN_INCLUDE=$(PIN_ROOT)/source/include/pin
 endif
 ifneq ($(realpath $(PIN_ROOT)/extras/xed-ia32/include),)
-PIN_XED_INCLUDE=$(PIN_ROOT)/extras/xed-ia32/include
+PIN_XED_INCLUDE=$(PIN_ROOT)/extras/xed-ia32/include/xed/
 else
-PIN_XED_INCLUDE=$(PIN_ROOT)/extras/xed2-ia32/include
+PIN_XED_INCLUDE=$(PIN_ROOT)/extras/xed2-ia32/include/xed/
 endif
 # check need for cross-compile.
 ifeq ($(findstring "x86_64", $(ARCH)),)
